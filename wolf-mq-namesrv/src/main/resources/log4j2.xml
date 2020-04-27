@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="info">
+
+    <!--先定义所有的appender -->
+    <appenders>
+        <!--这个输出控制台的配置 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!--这个都知道是输出日志的格式 -->
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %c %L %M - %msg%xEx%n"/>
+        </Console>
+    </appenders>
+
+    <!--然后定义logger，只有定义了logger并引入的appender，appender才会生效 -->
+    <loggers>
+        <!--建立一个默认的root的logger，只有能一个root -->
+        <root level="info">
+            <!--            <appender-ref ref="RollingFile"/>-->
+            <appender-ref ref="Console"/>
+            <!--            <appender-ref ref="ERROR" />-->
+            <!--            <appender-ref ref="log"/>-->
+        </root>
+        <!-- 设置指定包输出指定的日志级别 -->
+        <logger name="com.coke.wolf.mq" level="info"/>
+    </loggers>
+</configuration>
