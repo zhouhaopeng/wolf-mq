@@ -1,5 +1,6 @@
 package com.coke.wolf.mq.remote.netty;
 
+import com.coke.wolf.common.utils.ThreadFactoryImpl;
 import com.coke.wolf.mq.remote.RemoteClient;
 import com.coke.wolf.mq.remote.handler.NettyCodec;
 import io.netty.bootstrap.Bootstrap;
@@ -31,7 +32,7 @@ public class NettyRemoteClient implements RemoteClient {
 
     private Bootstrap bootstrap;
 
-    private NioEventLoopGroup workGroup = new NioEventLoopGroup(50);
+    private NioEventLoopGroup workGroup = new NioEventLoopGroup(3,new ThreadFactoryImpl("client_factory_"));
 
     public NettyRemoteClient(ChannelHandler clientHandler) {
         this.clientHandler = clientHandler;

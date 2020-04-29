@@ -8,6 +8,7 @@ import com.coke.wolf.mq.client.model.Message;
 import com.coke.wolf.mq.client.model.SendResult;
 import com.coke.wolf.mq.client.model.TopicData;
 import com.coke.wolf.mq.remote.RemoteCommand;
+import com.coke.wolf.mq.remote.ResponseFuture;
 import com.coke.wolf.mq.remote.netty.processor.AsyncRequestProcessor;
 import com.coke.wolf.mq.remote.netty.processor.NettyProcessor;
 import io.netty.channel.Channel;
@@ -39,13 +40,17 @@ public class SyncProducer extends AbstractProducer {
 
         RemoteCommand remoteCommand = RemoteCommand.build(BrokerProcessType.Client_Send_Msg_Req, KryoUtil.serializer(request));
         int requestId = remoteCommand.getRequestId();
-        asyncRequestProcessor.addQueueMap(requestId);
+        ResponseFuture responseFuture = asyncRequestProcessor.addQueueMap(requestId);
 
         channel.writeAndFlush(remoteCommand);
 
         logger.info("client send request " + GsonUtil.gsonString(request));
-        RemoteCommand resp = asyncRequestProcessor.getResult(requestId);
-
+        RemoteCommand resp = null;
+        try {
+            resp = responseFuture.waitResponse(Time_Out);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return convertResp(resp);
     }
 }

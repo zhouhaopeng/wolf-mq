@@ -1,5 +1,6 @@
 package com.coke.wolf.mq.remote.netty.processor;
 
+import com.coke.wolf.mq.remote.ResponseFuture;
 import com.coke.wolf.mq.remote.RemoteCommand;
 import com.google.common.collect.Maps;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,29 +21,29 @@ public class AsyncRequestProcessor implements NettyProcessor {
         this.timeOut = timeOut;
     }
 
-    private Map<Integer, SynchronousQueue<RemoteCommand>> synchronousQueueMap = Maps.newHashMap();
+    private Map<Integer, ResponseFuture> responseFutureMap = Maps.newHashMap();
 
-    public Map<Integer, SynchronousQueue<RemoteCommand>> getSynchronousQueueMap() {
-        return synchronousQueueMap;
+    public Map<Integer, ResponseFuture> getResponseFutureMap() {
+        return responseFutureMap;
+    }
+
+    public void setResponseFutureMap(
+        Map<Integer, ResponseFuture> responseFutureMap) {
+        this.responseFutureMap = responseFutureMap;
     }
 
     @Override public void processRemoteCommandRequest(ChannelHandlerContext ctx, RemoteCommand remoteCommand) {
 
-        getSynchronousQueueMap().get(remoteCommand.getRequestId()).offer(RemoteCommand.copy(remoteCommand));
-    }
-
-    public void addQueueMap(int requestId) {
-        synchronousQueueMap.putIfAbsent(requestId, new SynchronousQueue<>());
-    }
-
-    public RemoteCommand getResult(int requestId) {
-
-        RemoteCommand remoteCommand = null;
-        try {
-            remoteCommand = synchronousQueueMap.get(requestId).poll(30, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        ResponseFuture responseFuture = getResponseFutureMap().get(remoteCommand.getRequestId());
+        if (responseFuture != null) {
+            responseFuture.putResponse(remoteCommand);
         }
-        return remoteCommand;
     }
+
+    public ResponseFuture addQueueMap(int requestId) {
+        ResponseFuture responseFuture = new ResponseFuture();
+        responseFutureMap.putIfAbsent(requestId, responseFuture);
+        return responseFuture;
+    }
+
 }

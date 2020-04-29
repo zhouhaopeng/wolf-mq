@@ -99,7 +99,7 @@ public abstract class AbstractProducer extends ClientConfig implements Producer 
 
     private List<Channel> getConnect(BrokerData brokerData) {
         List<Channel> channelList = Lists.newArrayList();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             channelList.add(connect(brokerData));
         }
 

@@ -7,6 +7,7 @@ import com.coke.wolf.common.model.client.ClientPullMsgRequest;
 import com.coke.wolf.common.model.client.ClientSendMsgRequest;
 import com.coke.wolf.common.utils.GsonUtil;
 import com.coke.wolf.common.utils.KryoUtil;
+import com.coke.wolf.common.utils.ThreadFactoryImpl;
 import com.coke.wolf.mq.broker.BrokerController;
 import com.coke.wolf.mq.broker.store.CommitLogItem;
 import com.coke.wolf.mq.remote.RemoteCommand;
@@ -36,8 +37,8 @@ public class ClientRequestProcessor implements NettyProcessor {
 
     private BrokerController brokerController;
 
-    private Executor sendMsgExecutor = new ThreadPoolExecutor(20, 60, 3600, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(3000));
+    private Executor sendMsgExecutor = new ThreadPoolExecutor(1, 16, 3600, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(10000), new ThreadFactoryImpl("send_msg_factory_"));
 
     private Executor pullMsgExecutor = new ThreadPoolExecutor(20, 60, 3600, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(3000));
@@ -69,8 +70,11 @@ public class ClientRequestProcessor implements NettyProcessor {
         CommitLogItem commitLogItem = convert(request);
 
         logger.info("received message =" + GsonUtil.gsonString(commitLogItem));
-
+        long begin = System.currentTimeMillis();
         brokerController.getDefaultMessageStore().putMessage(commitLogItem);
+        long end = System.currentTimeMillis();
+        long consumeTime = end - begin;
+        System.out.println("consume time= " + consumeTime + ",second = " + consumeTime / 1000);
 
         RemoteResponse response = RemoteResponse.buildSuccess();
         ctx.writeAndFlush(RemoteCommand.build(remoteCommand.getRequestId(), remoteCommand.getType(), KryoUtil.serializer(response)));

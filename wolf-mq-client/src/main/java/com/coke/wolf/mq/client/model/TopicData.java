@@ -55,7 +55,7 @@ public class TopicData {
     }
 
     public Channel getChannel() {
-        return channels.get(NumberUtils.random(10));
+        return channels.get(0);
     }
 
     public List<Channel> getChannels() {

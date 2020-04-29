@@ -34,27 +34,50 @@ public class SyncProducerTest {
         String[] bodys = {"java", "c", "php", "python"};
 
         long beginTime = System.currentTimeMillis();
-        long size = 0;
-        for (int i = 0; i < 10; i++) {
-
-            SendResult result = null;
-            for (int j = 0; j < 10; j++) {
-                Message message = new Message();
-               // message.setQueueId(1);
-                message.setTopic(topic);
-                String body = bodys[i % 4];
-                byte[] bodyBuf = body.getBytes(Charset.forName("UTF-8"));
-                message.setBody(bodyBuf);
-                size += bodyBuf.length;
-                result = syncProducer.send(message);
-            }
+        for (int i = 0; i < 50000; i++) {
+            Message message = new Message();
+            message.setTopic(topic);
+            String body = bodys[i % 4];
+            byte[] bodyBuf = body.getBytes(Charset.forName("UTF-8"));
+            message.setBody(bodyBuf);
+            SendResult result = syncProducer.send(message);
             logger.info("index=" + i + ",result = " + GsonUtil.gsonString(result));
         }
         long endTime = System.currentTimeMillis();
 
         System.out.println(endTime - beginTime);
         System.out.println((endTime - beginTime) / 1000);
-        System.out.println(size);
-        System.out.println(size / 1024);
+    }
+
+    @Test
+    public void sendMsg2() throws InterruptedException {
+
+        SyncProducer syncProducer = new SyncProducer();
+
+        syncProducer.setNameSrv("127.0.0.1:9999");
+        syncProducer.subscribe(topic);
+
+        syncProducer.start();
+
+        String[] bodys = {"java", "c", "php", "python"};
+
+        long beginTime = System.currentTimeMillis();
+        for (int i = 0; i < 50000; i++) {
+            Message message = new Message();
+            message.setTopic(topic);
+            String body = bodys[i % 4];
+            byte[] bodyBuf = body.getBytes(Charset.forName("UTF-8"));
+            message.setBody(bodyBuf);
+            long begin = System.currentTimeMillis();
+            SendResult result = syncProducer.send(message);
+            long end = System.currentTimeMillis();
+            long consumeTime = end - begin;
+            System.out.println("index=" + i + ",result = " + GsonUtil.gsonString(result));
+            System.out.println("consume time= " + consumeTime + ",second = " + consumeTime / 1000);
+        }
+        long endTime = System.currentTimeMillis();
+
+        System.out.println(endTime - beginTime);
+        System.out.println((endTime - beginTime) / 1000);
     }
 }

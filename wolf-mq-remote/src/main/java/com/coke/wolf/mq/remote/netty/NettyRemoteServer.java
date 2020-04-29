@@ -33,7 +33,7 @@ public class NettyRemoteServer implements RemoteServer {
 
     private NioEventLoopGroup boosGroup = new NioEventLoopGroup(1);
 
-    private NioEventLoopGroup workGroup = new NioEventLoopGroup(50);
+    private NioEventLoopGroup workGroup = new NioEventLoopGroup(3);
 
     private volatile boolean started = false;
 
